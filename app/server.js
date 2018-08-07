@@ -1,8 +1,11 @@
 const Readline = require('@serialport/parser-readline')
-const Ready = require('@serialport/parser-ready')
 
 const { StringDecoder } = require('string_decoder')
 const decoder = new StringDecoder('utf8')
+
+const prompt = '\r\ndwm> '
+
+const removePrompt = line => line.replace(/^dwm> (.*)/, '$1')
 
 const parseCoordinates = csv => {
   const [cmd, arg, sensor_id, x, y, z, accuracy, hex] = csv.split(',')
@@ -33,7 +36,6 @@ module.exports = (SerialPort, dbClient, portDidOpen = noop) => {
   let state = 'OPENING'
 
   port.on('open', () => {
-    console.log('open')
     state = 'OPEN'
     port.write('\r\r', portDidOpen)
   })
@@ -42,31 +44,29 @@ module.exports = (SerialPort, dbClient, portDidOpen = noop) => {
     const message = decoder.write(data)
     switch (state) {
       case 'OPEN':
-        if (message === '\r\ndwm> ') {
+        if (message === prompt) {
           state = 'SHELL'
-          port.write('lec\r', () => {
-            state = 'POS'
-            console.log('lec done')
-          })
+          port.write('lec\r')
         }
         break
-      case 'POS':
-        console.log(`pos: ${message}`)
+      case 'SHELL':
+        if (message === prompt) {
+          state = 'POS'
+        }
         break
-      default:
-        console.log(`state = ${state}, message = "${message}"`)
     }
   })
 
-  const parser = port
-    //.pipe(new Ready({ delimiter: 'READY' }))
-    .pipe(new Readline({ delimiter: '\r\n' }))
+  const parser = port.pipe(new Readline({ delimiter: '\r\n' }))
 
-  parser.on('data', data => {
-    console.log(`data: "data"`)
-    //const coordinates = parseCoordinates(data)
+  parser.on('data', line => {
+    const message = removePrompt(line)
+    if (message && message !== 'lec') {
+      const coordinates = parseCoordinates(message)
 
-    //dbClient.saveCoordinates(coordinates)
+      //dbClient.saveCoordinates(coordinates)
+      console.log(coordinates)
+    }
   })
 
   return port

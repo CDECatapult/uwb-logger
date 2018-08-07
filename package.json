@@ -23,7 +23,6 @@
   },
   "dependencies": {
     "@serialport/parser-readline": "^1.0.5",
-    "@serialport/parser-ready": "^1.0.5",
     "envalid": "^4.1.4",
     "knex": "^0.15.2",
     "pg": "^7.4.3",
