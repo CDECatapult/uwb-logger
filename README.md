@@ -22,7 +22,6 @@ Yarn:
 
 - Error handling (try to reconnect)
 - Add sentry
-- Enter shell mode etc
 
 ## Hardware
 

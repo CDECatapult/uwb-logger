@@ -8,12 +8,11 @@ const prompt = 'dwm> '
 const removePrompt = line => line.replace(prompt, '')
 
 const parseCoordinates = csv => {
-  const [cmd, arg, sensor_id, x, y, z, accuracy, hex] = csv.split(',')
+  const [cmd, , sensor_id, x, y, z, accuracy, hex] = csv.split(',')
 
   switch (cmd) {
     case 'POS':
       return {
-        arg,
         sensor_id,
         x: Number(x),
         y: Number(y),
@@ -26,9 +25,13 @@ const parseCoordinates = csv => {
   }
 }
 
-function noop() {}
+const defaultOpts = {
+  shellCommandReceived() {},
+  lecCommandReceived() {},
+  ready() {},
+}
 
-module.exports = (SerialPort, dbClient, portDidOpen = noop) => {
+module.exports = (SerialPort, dbClient, opts) => {
   const port = new SerialPort('/dev/ttyACM0', {
     baudRate: 115200,
   })
@@ -48,12 +51,14 @@ module.exports = (SerialPort, dbClient, portDidOpen = noop) => {
     quit()
   })
 
+  opts = { ...defaultOpts, ...opts }
+
   let state = 'OPENING'
 
   port.on('open', () => {
     state = 'OPEN'
     console.info('Sending shell command...')
-    port.write('\r\r', () => console.info('Shell command sent'))
+    port.write('\r\r', opts.shellCommandReceived)
   })
 
   port.on('data', data => {
@@ -63,13 +68,13 @@ module.exports = (SerialPort, dbClient, portDidOpen = noop) => {
         if (message.endsWith(prompt)) {
           state = 'SHELL'
           console.info('Sending lec command...')
-          port.write('lec\r', () => console.info('Lec command sent'))
+          port.write('lec\r', opts.lecCommandReceived)
         }
         break
       case 'SHELL':
         if (message.endsWith(prompt)) {
           state = 'POS'
-          console.info('Ready to receive POS')
+          opts.ready()
         }
         break
     }
@@ -90,8 +95,7 @@ module.exports = (SerialPort, dbClient, portDidOpen = noop) => {
     if (message && message !== 'lec') {
       const coordinates = parseCoordinates(message)
 
-      //dbClient.saveCoordinates(coordinates)
-      console.log(message, coordinates)
+      dbClient.saveCoordinates(coordinates)
     }
   })
 

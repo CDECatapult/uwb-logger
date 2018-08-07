@@ -11,4 +11,16 @@ const dbClient = createDbClient({
   name: env.DB_NAME,
 })
 
-createPort(SerialPort, dbClient)
+const opts = {
+  shellCommandReceived() {
+    console.info('Shell command sent')
+  },
+  lecCommandReceived() {
+    console.info('Lec command sent')
+  },
+  ready() {
+    console.info('Ready to receive POS')
+  },
+}
+
+createPort(SerialPort, dbClient, opts)
