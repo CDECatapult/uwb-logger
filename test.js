@@ -3,17 +3,23 @@ const SerialPort = require('serialport/test')
 const MockBinding = SerialPort.Binding
 
 test.cb('Can read serial port and send to server', t => {
-  t.plan(1)
+  t.plan(4)
 
-  MockBinding.createPort('/dev/ttyACM0', { echo: true, record: true })
-  const handler = data => {
-    t.pass()
-    t.end()
+  const mockDbClient = {
+    saveCoordinates({ sensor_id, x, y, z }) {
+      t.is(x, 10)
+      t.is(y, 20)
+      t.is(z, 30)
+      t.is(sensor_id, 'ABC123')
+      t.end()
+    },
   }
 
-  const createPort = require('./app/server')
-  const port = createPort(SerialPort, handler)
+  MockBinding.createPort('/dev/ttyACM0', { echo: true, record: true })
 
-  const message = Buffer.from('ABC\t10\t20\t30\n')
+  const createPort = require('./app/server')
+  const port = createPort(SerialPort, mockDbClient)
+
+  const message = Buffer.from('ABC123\t10\t20\t30\n')
   port.write(message)
 })
