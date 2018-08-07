@@ -22,7 +22,7 @@ const parseCoordinates = csv => {
         hex,
       }
     default:
-      throw new Error(`Unknown command ${cmd}`)
+      console.warn(`Malformed input: ${csv}`)
   }
 }
 
@@ -37,7 +37,8 @@ module.exports = (SerialPort, dbClient, portDidOpen = noop) => {
 
   port.on('open', () => {
     state = 'OPEN'
-    port.write('\r\r', portDidOpen)
+    console.log('Sending shell command...')
+    port.write('\r\r', () => console.log('Shell command sent'))
   })
 
   port.on('data', data => {
@@ -46,12 +47,18 @@ module.exports = (SerialPort, dbClient, portDidOpen = noop) => {
       case 'OPEN':
         if (message === prompt) {
           state = 'SHELL'
-          port.write('lec\r')
+          console.log('Sending lec command...')
+          port.write('lec\r', () => console.log('Lec command sent'))
+        } else {
+          console.log(`state = ${state}, message = "${message}"`)
         }
         break
       case 'SHELL':
         if (message === prompt) {
           state = 'POS'
+          console.log('Ready to receive POS')
+        } else {
+          console.log(`state = ${state}, message = "${message}"`)
         }
         break
     }
@@ -65,7 +72,7 @@ module.exports = (SerialPort, dbClient, portDidOpen = noop) => {
       const coordinates = parseCoordinates(message)
 
       //dbClient.saveCoordinates(coordinates)
-      console.log(coordinates)
+      console.log(message, coordinates)
     }
   })
 
