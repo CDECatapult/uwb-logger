@@ -10,7 +10,8 @@
     "start": "NODE_ENV=production node .",
     "dev": "nodemon .",
     "lint": "eslint app",
-    "test": "ava"
+    "test": "ava",
+    "rsync": "rsync -az . pi:/home/pi/uwb-logger --exclude-from .gitignore --exclude .git"
   },
   "devDependencies": {
     "ava": "^0.25.0",
