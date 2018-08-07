@@ -20,8 +20,7 @@ test.cb('Can read serial port and send to server', t => {
   const createPort = require('./app/server')
   const port = createPort(SerialPort, mockDbClient, () => {
     t.is(port.binding.lastWrite.toString('utf8'), '\r\r')
-  })
 
-  const message = Buffer.from('ABC123\t10\t20\t30\n')
-  port.write(message)
+    port.binding.emitData(Buffer.from('ABC123\t10\t20\t30\n'))
+  })
 })
