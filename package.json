@@ -1,0 +1,29 @@
+{
+  "name": "jit-ai-uwb-client",
+  "version": "1.0.0",
+  "description": "Read coordinates from serial port and send them to an external server for collection",
+  "main": "app/index.js",
+  "author": "Anthony Garcia <anthony.garcia@digicatapult.org.uk>",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "NODE_ENV=production node .",
+    "dev": "nodemon .",
+    "lint": "eslint app",
+    "test": "ava"
+  },
+  "devDependencies": {
+    "ava": "^0.25.0",
+    "eslint": "^5.2.0",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-prettier": "^2.6.2",
+    "nodemon": "^1.17.5",
+    "prettier": "^1.14.0"
+  },
+  "dependencies": {
+    "@serialport/parser-readline": "^1.0.5",
+    "envalid": "^4.1.4",
+    "serialport": "^6.2.2",
+    "ws": "^6.0.0"
+  }
+}
