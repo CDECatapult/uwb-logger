@@ -1,7 +1,6 @@
-const SerialPort = require('serialport')
 const Readline = require('@serialport/parser-readline')
 
-module.exports = () => {
+module.exports = (SerialPort, handle) => {
   const port = new SerialPort('/dev/ttyACM0', {
     baudRate: 115200,
   })
@@ -13,7 +12,7 @@ module.exports = () => {
   const parser = port.pipe(new Readline({ delimiter: '\n' }))
 
   parser.on('data', data => {
-    console.log(data)
+    handle(data)
   })
 
   return port

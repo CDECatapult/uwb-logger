@@ -1,10 +1,19 @@
 const test = require('ava')
 const SerialPort = require('serialport/test')
 const MockBinding = SerialPort.Binding
-const createPortListener = require('./app/server')
 
-test('Can read serial port and send to server', t => {
-  // Create a port and enable the echo and recording.
+test.cb('Can read serial port and send to server', t => {
+  t.plan(1)
+
   MockBinding.createPort('/dev/ttyACM0', { echo: true, record: true })
-  const port = createPortListener()
+  const handler = data => {
+    t.pass()
+    t.end()
+  }
+
+  const createPort = require('./app/server')
+  const port = createPort(SerialPort, handler)
+
+  const message = Buffer.from('ABC\t10\t20\t30\n')
+  port.write(message)
 })
