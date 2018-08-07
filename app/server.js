@@ -3,9 +3,9 @@ const Readline = require('@serialport/parser-readline')
 const { StringDecoder } = require('string_decoder')
 const decoder = new StringDecoder('utf8')
 
-const prompt = '\r\ndwm> '
+const prompt = 'dwm> '
 
-const removePrompt = line => line.replace(/^dwm> (.*)/, '$1')
+const removePrompt = line => line.replace(prompt, '')
 
 const parseCoordinates = csv => {
   const [cmd, arg, sensor_id, x, y, z, accuracy, hex] = csv.split(',')
@@ -53,22 +53,21 @@ module.exports = (SerialPort, dbClient, portDidOpen = noop) => {
   port.on('open', () => {
     state = 'OPEN'
     console.info('Sending shell command...')
-    port.write('\r\r', () => console.log('Shell command sent'))
+    port.write('\r\r', () => console.info('Shell command sent'))
   })
 
   port.on('data', data => {
     const message = decoder.write(data)
-    console.log(`state = ${state}, message = "${message}"`)
     switch (state) {
       case 'OPEN':
-        if (message === prompt || message.endsWith('? or help\r\n')) {
+        if (message.endsWith(prompt)) {
           state = 'SHELL'
           console.info('Sending lec command...')
-          port.write('lec\r', () => console.log('Lec command sent'))
+          port.write('lec\r', () => console.info('Lec command sent'))
         }
         break
       case 'SHELL':
-        if (message === prompt) {
+        if (message.endsWith(prompt)) {
           state = 'POS'
           console.info('Ready to receive POS')
         }
