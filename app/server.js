@@ -6,14 +6,15 @@ const parseCoordinates = csv => {
   return { sensor_id, x: Number(x), y: Number(y), z: Number(z) }
 }
 
-module.exports = (SerialPort, dbClient) => {
+function noop() {}
+
+module.exports = (SerialPort, dbClient, portDidOpen = noop) => {
   const port = new SerialPort('/dev/ttyACM0', {
     baudRate: 115200,
   })
 
   port.on('open', () => {
-    console.log('open')
-    //   port.write('\r\r')
+    port.write('\r\r', portDidOpen)
   })
 
   const parser = port
