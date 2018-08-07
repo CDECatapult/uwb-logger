@@ -33,35 +33,55 @@ module.exports = (SerialPort, dbClient, portDidOpen = noop) => {
     baudRate: 115200,
   })
 
+  const quit = () => {
+    port.write('quit\r', () => {
+      port.close(() => process.exit(1))
+    })
+  }
+
+  process.once('SIGINT', () => {
+    console.info('SIGINT received...')
+    quit()
+  })
+  process.once('SIGTERM', () => {
+    console.info('SIGTERM received...')
+    quit()
+  })
+
   let state = 'OPENING'
 
   port.on('open', () => {
     state = 'OPEN'
-    console.log('Sending shell command...')
+    console.info('Sending shell command...')
     port.write('\r\r', () => console.log('Shell command sent'))
   })
 
   port.on('data', data => {
     const message = decoder.write(data)
+    console.log(`state = ${state}, message = "${message}"`)
     switch (state) {
       case 'OPEN':
-        if (message === prompt) {
+        if (message === prompt || message.endsWith('? or help\r\n')) {
           state = 'SHELL'
-          console.log('Sending lec command...')
+          console.info('Sending lec command...')
           port.write('lec\r', () => console.log('Lec command sent'))
-        } else {
-          console.log(`state = ${state}, message = "${message}"`)
         }
         break
       case 'SHELL':
         if (message === prompt) {
           state = 'POS'
-          console.log('Ready to receive POS')
-        } else {
-          console.log(`state = ${state}, message = "${message}"`)
+          console.info('Ready to receive POS')
         }
         break
     }
+  })
+
+  port.on('error', err => {
+    console.error('Error on port', err)
+  })
+
+  port.on('close', () => {
+    console.info('Port closed')
   })
 
   const parser = port.pipe(new Readline({ delimiter: '\r\n' }))
