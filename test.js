@@ -3,14 +3,19 @@ const SerialPort = require('serialport/test')
 const MockBinding = SerialPort.Binding
 
 test.cb('Can read serial port and send to server', t => {
-  t.plan(5)
+  t.plan(2)
 
   const mockDbClient = {
-    saveCoordinates({ sensor_id, x, y, z }) {
-      t.is(x, 10)
-      t.is(y, 20)
-      t.is(z, 30)
-      t.is(sensor_id, 'ABC123')
+    saveCoordinates(pos) {
+      t.deepEqual(pos, {
+        arg: '0',
+        sensor_id: '8B32',
+        x: 1.74,
+        y: 0.38,
+        z: 0.42,
+        accuracy: 100,
+        hex: 'x16',
+      })
       t.end()
     },
   }
@@ -21,6 +26,6 @@ test.cb('Can read serial port and send to server', t => {
   const port = createPort(SerialPort, mockDbClient, () => {
     t.is(port.binding.lastWrite.toString('utf8'), '\r\r')
 
-    port.binding.emitData(Buffer.from('ABC123\t10\t20\t30\n'))
+    port.binding.emitData(Buffer.from('POS,0,8B32,1.74,0.38,0.42,100,x16\n'))
   })
 })

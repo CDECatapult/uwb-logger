@@ -2,8 +2,22 @@ const Readline = require('@serialport/parser-readline')
 const Ready = require('@serialport/parser-ready')
 
 const parseCoordinates = csv => {
-  const [sensor_id, x, y, z] = csv.split('\t')
-  return { sensor_id, x: Number(x), y: Number(y), z: Number(z) }
+  const [cmd, arg, sensor_id, x, y, z, accuracy, hex] = csv.split(',')
+
+  switch (cmd) {
+    case 'POS':
+      return {
+        arg,
+        sensor_id,
+        x: Number(x),
+        y: Number(y),
+        z: Number(z),
+        accuracy: Number(accuracy),
+        hex,
+      }
+    default:
+      throw new Error(`Unknown command ${cmd}`)
+  }
 }
 
 function noop() {}
