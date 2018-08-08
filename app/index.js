@@ -1,7 +1,12 @@
 const SerialPort = require('serialport')
+const Raven = require('raven')
 const env = require('./env')
 const createDbClient = require('./db')
 const createPort = require('./server.js')
+
+if (env.RAVEN_DSN) {
+  Raven.config(env.SENTRY_DSN).install()
+}
 
 const dbClient = createDbClient({
   username: env.DB_USERNAME,
@@ -23,4 +28,8 @@ const opts = {
   },
 }
 
-createPort(SerialPort, dbClient, opts)
+createPort(SerialPort, dbClient, opts).catch(err => {
+  if (env.RAVEN_DSN) {
+    Raven.captureException(err)
+  }
+})
