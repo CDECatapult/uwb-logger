@@ -21,7 +21,6 @@ Yarn:
 ## TODO
 
 - Error handling (try to reconnect)
-- Add sentry
 
 ## Hardware
 

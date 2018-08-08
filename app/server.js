@@ -31,7 +31,7 @@ const defaultOpts = {
   ready() {},
 }
 
-module.exports = (SerialPort, dbClient, opts) => {
+module.exports = (SerialPort, dbClient, handleError, opts) => {
   const port = new SerialPort('/dev/ttyACM0', {
     baudRate: 115200,
   })
@@ -80,9 +80,7 @@ module.exports = (SerialPort, dbClient, opts) => {
     }
   })
 
-  port.on('error', err => {
-    console.error('Error on port', err)
-  })
+  port.on('error', handleError)
 
   port.on('close', () => {
     console.info('Port closed')

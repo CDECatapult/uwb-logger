@@ -31,7 +31,8 @@ test.cb('enter shell mode and send lec command', t => {
   })
 
   const createPort = require('./app/server')
-  const port = createPort(SerialPort, mockDbClient, opts)
+  const handleError = err => t.fail(err)
+  const port = createPort(SerialPort, mockDbClient, handleError, opts)
 })
 
 test.cb('read coordinates from serial port', t => {
@@ -58,7 +59,8 @@ test.cb('read coordinates from serial port', t => {
   })
 
   const createPort = require('./app/server')
-  const port = createPort(SerialPort, mockDbClient)
+  const handleError = err => t.fail(err)
+  const port = createPort(SerialPort, mockDbClient, handleError)
   port.on('open', () => {
     port.binding.emitData(Buffer.from('POS,0,8B32,1.74,0.38,0.42,100,x16\r\n'))
   })
@@ -110,7 +112,8 @@ test.cb('Can read multiple messages', t => {
   })
 
   const createPort = require('./app/server')
-  const port = createPort(SerialPort, mockDbClient)
+  const handleError = err => t.fail(err)
+  const port = createPort(SerialPort, mockDbClient, handleError)
   port.on('open', () => {
     port.binding.emitData(
       Buffer.from(

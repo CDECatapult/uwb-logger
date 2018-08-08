@@ -28,8 +28,18 @@ const opts = {
   },
 }
 
-createPort(SerialPort, dbClient, opts).catch(err => {
-  if (env.RAVEN_DSN) {
-    Raven.captureException(err)
+const handleError = err => {
+  console.error(err)
+  if (env.SENTRY_DSN) {
+    console.info('Sending error to Sentry...')
+    Raven.captureException(err, (sendErr, eventId) => {
+      if (sendErr) {
+        console.error('Failed to send captured exception to Sentry')
+      } else {
+        console.info(`Event Id: ${eventId}`)
+      }
+    })
   }
-})
+}
+
+createPort(SerialPort, dbClient, handleError, opts)
