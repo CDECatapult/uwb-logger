@@ -1,5 +1,6 @@
 const test = require('ava')
 const SerialPort = require('serialport/test')
+const createPort = require('./app/server')
 const MockBinding = SerialPort.Binding
 
 test.cb('enter shell mode and send lec command', t => {
@@ -30,7 +31,6 @@ test.cb('enter shell mode and send lec command', t => {
     readyData: '',
   })
 
-  const createPort = require('./app/server')
   const handleError = err => t.fail(err)
   const port = createPort(SerialPort, mockDbClient, handleError, opts)
 })
@@ -58,7 +58,6 @@ test.cb('read coordinates from serial port', t => {
     readyData: '',
   })
 
-  const createPort = require('./app/server')
   const handleError = err => t.fail(err)
   const port = createPort(SerialPort, mockDbClient, handleError)
   port.on('open', () => {
@@ -111,7 +110,6 @@ test.cb('Can read multiple messages', t => {
     readyData: '',
   })
 
-  const createPort = require('./app/server')
   const handleError = err => t.fail(err)
   const port = createPort(SerialPort, mockDbClient, handleError)
   port.on('open', () => {
