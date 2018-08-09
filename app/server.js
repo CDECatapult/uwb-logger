@@ -93,7 +93,7 @@ module.exports = (SerialPort, dbClient, handleError, opts) => {
     if (message && message !== 'lec') {
       const coordinates = parseCoordinates(message)
 
-      dbClient.saveCoordinates(coordinates)
+      dbClient.saveCoordinates(coordinates).catch(handleError)
     }
   })
 

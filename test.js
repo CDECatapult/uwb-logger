@@ -7,7 +7,9 @@ test.cb('enter shell mode and send lec command', t => {
   t.plan(3)
 
   const mockDbClient = {
-    saveCoordinates() {},
+    saveCoordinates() {
+      return Promise.resolve()
+    },
   }
 
   const opts = {
@@ -49,6 +51,7 @@ test.cb('read coordinates from serial port', t => {
         hex: 'x16',
       })
       t.end()
+      return Promise.resolve()
     },
   }
 
@@ -101,6 +104,7 @@ test.cb('Can read multiple messages', t => {
       if (!expectedCoordinates.length) {
         t.end()
       }
+      return Promise.resolve()
     },
   }
 
