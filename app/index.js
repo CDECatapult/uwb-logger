@@ -2,6 +2,7 @@ const SerialPort = require('serialport')
 const Raven = require('raven')
 const env = require('./env')
 const createDbClient = require('./db')
+const logger = require('./logger')
 const createPort = require('./server.js')
 
 if (env.RAVEN_DSN) {
@@ -18,28 +19,28 @@ const dbClient = createDbClient({
 
 const opts = {
   shellCommandReceived() {
-    console.info('Shell command sent')
+    logger.info('Shell command sent')
   },
   lecCommandReceived() {
-    console.info('Lec command sent')
+    logger.info('Lec command sent')
   },
   ready() {
-    console.info('Ready to receive POS')
+    logger.info('Ready to receive POS')
   },
 }
 
 const handleError = err => {
-  console.error(err)
+  logger.error(err)
   if (env.SENTRY_DSN) {
-    console.info('Sending error to Sentry...')
+    logger.info('Sending error to Sentry...')
     Raven.captureException(err, (sendErr, eventId) => {
       if (sendErr) {
-        console.error('Failed to send captured exception to Sentry')
+        logger.error('Failed to send captured exception to Sentry')
       } else {
-        console.info(`Event Id: ${eventId}`)
+        logger.info(`Event Id: ${eventId}`)
       }
     })
   }
 }
 
-createPort(SerialPort, dbClient, handleError, opts)
+createPort(SerialPort, dbClient, logger, handleError, opts)

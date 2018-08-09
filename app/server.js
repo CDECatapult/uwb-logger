@@ -7,31 +7,13 @@ const prompt = 'dwm> '
 
 const removePrompt = line => line.replace(prompt, '')
 
-const parseCoordinates = csv => {
-  const [cmd, , sensor_id, x, y, z, accuracy, hex] = csv.split(',')
-
-  switch (cmd) {
-    case 'POS':
-      return {
-        sensor_id,
-        x: Number(x),
-        y: Number(y),
-        z: Number(z),
-        accuracy: Number(accuracy),
-        hex,
-      }
-    default:
-      console.warn(`Malformed input: ${csv}`)
-  }
-}
-
 const defaultOpts = {
   shellCommandReceived() {},
   lecCommandReceived() {},
   ready() {},
 }
 
-module.exports = (SerialPort, dbClient, handleError, opts) => {
+module.exports = (SerialPort, dbClient, logger, handleError, opts) => {
   const port = new SerialPort('/dev/ttyACM0', {
     baudRate: 115200,
   })
@@ -43,11 +25,11 @@ module.exports = (SerialPort, dbClient, handleError, opts) => {
   }
 
   process.once('SIGINT', () => {
-    console.info('SIGINT received...')
+    logger.info('SIGINT received...')
     quit()
   })
   process.once('SIGTERM', () => {
-    console.info('SIGTERM received...')
+    logger.info('SIGTERM received...')
     quit()
   })
 
@@ -57,7 +39,7 @@ module.exports = (SerialPort, dbClient, handleError, opts) => {
 
   port.on('open', () => {
     state = 'OPEN'
-    console.info('Sending shell command...')
+    logger.info('Sending shell command...')
     port.write('\r\r', opts.shellCommandReceived)
   })
 
@@ -67,7 +49,7 @@ module.exports = (SerialPort, dbClient, handleError, opts) => {
       case 'OPEN':
         if (message.endsWith(prompt)) {
           state = 'SHELL'
-          console.info('Sending lec command...')
+          logger.info('Sending lec command...')
           port.write('lec\r', opts.lecCommandReceived)
         }
         break
@@ -83,17 +65,29 @@ module.exports = (SerialPort, dbClient, handleError, opts) => {
   port.on('error', handleError)
 
   port.on('close', () => {
-    console.info('Port closed')
+    logger.info('Port closed')
   })
 
   const parser = port.pipe(new Readline({ delimiter: '\r\n' }))
 
-  parser.on('data', line => {
-    const message = removePrompt(line)
-    if (message && message !== 'lec') {
-      const coordinates = parseCoordinates(message)
-
-      dbClient.saveCoordinates(coordinates).catch(handleError)
+  parser.on('data', data => {
+    const csv = removePrompt(data)
+    if (csv && csv !== 'lec') {
+      const [cmd, , sensor_id, x, y, z, accuracy, hex] = csv.split(',')
+      if (cmd === 'POS') {
+        dbClient
+          .saveCoordinates({
+            sensor_id,
+            x: Number(x),
+            y: Number(y),
+            z: Number(z),
+            accuracy: Number(accuracy),
+            hex,
+          })
+          .catch(handleError)
+      } else {
+        logger.warn(`Malformed input: ${csv}`)
+      }
     }
   })
 

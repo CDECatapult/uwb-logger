@@ -1,7 +1,16 @@
 const test = require('ava')
+const pino = require('pino')
 const SerialPort = require('serialport/test')
 const createPort = require('./app/server')
 const MockBinding = SerialPort.Binding
+
+const logger = pino({ level: 'silent' })
+
+const getPort = (t, dbClient, opts) => {
+  const handleError = err => t.fail(err)
+  const port = createPort(SerialPort, dbClient, logger, handleError, opts)
+  return port
+}
 
 test.cb('enter shell mode and send lec command', t => {
   t.plan(3)
@@ -33,8 +42,7 @@ test.cb('enter shell mode and send lec command', t => {
     readyData: '',
   })
 
-  const handleError = err => t.fail(err)
-  const port = createPort(SerialPort, mockDbClient, handleError, opts)
+  const port = getPort(t, mockDbClient, opts)
 })
 
 test.cb('read coordinates from serial port', t => {
@@ -61,8 +69,7 @@ test.cb('read coordinates from serial port', t => {
     readyData: '',
   })
 
-  const handleError = err => t.fail(err)
-  const port = createPort(SerialPort, mockDbClient, handleError)
+  const port = getPort(t, mockDbClient)
   port.on('open', () => {
     port.binding.emitData(Buffer.from('POS,0,8B32,1.74,0.38,0.42,100,x16\r\n'))
   })
@@ -114,8 +121,7 @@ test.cb('Can read multiple messages', t => {
     readyData: '',
   })
 
-  const handleError = err => t.fail(err)
-  const port = createPort(SerialPort, mockDbClient, handleError)
+  const port = getPort(t, mockDbClient)
   port.on('open', () => {
     port.binding.emitData(
       Buffer.from(
