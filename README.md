@@ -3,7 +3,7 @@
 This code run on a raspberry pi.
 It reads the coordinates from the UWB through serial port and store them in a database.
 
-## Installation
+## Installation
 
 This package require node 8+ and yarn:
 
