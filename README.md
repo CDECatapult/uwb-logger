@@ -1,7 +1,7 @@
 # JIT-AI UWB client
 
 This code run on a raspberry pi.
-It reads the coordinates from the UWB through serial port and store them in a remote PGSQL.
+It reads the coordinates from the UWB through serial port and store them in a database.
 
 ## Installation
 
@@ -18,14 +18,6 @@ Yarn:
     echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
     sudo apt-get update && sudo apt-get install yarn
 
-## TODO
-
-- Error handling (try to reconnect)
-
 ## Hardware
 
 DWM1001 TWR Real Time Location System
-Copyright : 2016-2017 LEAPS and Decawave
-License : Please visit https://decawave.com/dwm1001_license
-Compiled : Nov 2 9 2017 13:35:02
-Help : ? or help
