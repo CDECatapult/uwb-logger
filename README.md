@@ -44,5 +44,5 @@ This project uses the UART through /dev/ttyACM0
 It then enters the shell mode by printing 2 CR in less than one second and send
 the `lec` command to listen to the positions.
 
-- [https://www.decawave.com/wp-content/uploads/2018/08/dwm1001_firmware_user_guide.pdf](User guide)
-- [https://www.decawave.com/wp-content/uploads/2018/08/dwm1001-api-guide.pdf](API guide)
+- [User guide](https://www.decawave.com/wp-content/uploads/2018/08/dwm1001_firmware_user_guide.pdf)
+- [API guide](https://www.decawave.com/wp-content/uploads/2018/08/dwm1001-api-guide.pdf)
