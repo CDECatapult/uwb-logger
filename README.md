@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/CDECatapult/uwb-logger.svg?style=svg)](https://circleci.com/gh/CDECatapult/uwb-logger)
+
 # JIT-AI UWB client
 
 This code run on a raspberry pi.
