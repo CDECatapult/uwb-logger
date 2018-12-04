@@ -11,7 +11,7 @@ It reads the coordinates from the UWB through serial port and store them in a re
 +----------------+       |    +----------------+          +------------+    |
 |                |       |    |                |          |            |    |
 |  Database      |       |    |  Raspberry PI  |  serial  |  Decawave  |    |
-|  (PostGreSQL)  | <--------+ |  (Linux)       | <------+ |  devices   |    |
+|  (PostGreSQL)  | <--------+ |  (Linux)       | <------+ |  device    |    |
 |                |       |    |                |          |            |    |
 +----------------+       |    +----------------+          +------------+    |
                          |                                                  |
@@ -37,4 +37,12 @@ Yarn:
 
 ## Hardware
 
-DWM1001 TWR Real Time Location System
+DWM1001 TWR Real Time Location System.
+
+There are two ways to connect to the Decawave HW: UART or SPI.
+This project uses the UART through /dev/ttyACM0
+It then enters the shell mode by printing 2 CR in less than one second and send
+the `lec` command to listen to the positions.
+
+- [https://www.decawave.com/wp-content/uploads/2018/08/dwm1001_firmware_user_guide.pdf](User guide)
+- [https://www.decawave.com/wp-content/uploads/2018/08/dwm1001-api-guide.pdf](API guide)
