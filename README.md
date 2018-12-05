@@ -1,4 +1,5 @@
 [![CircleCI](https://circleci.com/gh/CDECatapult/uwb-logger.svg?style=svg)](https://circleci.com/gh/CDECatapult/uwb-logger)
+[![Known Vulnerabilities](https://snyk.io/test/github/CDECatapult/uwb-logger/badge.svg)](https://snyk.io/test/github/CDECatapult/uwb-logger)
 
 # JIT-AI UWB client
 
