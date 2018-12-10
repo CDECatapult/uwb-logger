@@ -1,25 +1,37 @@
 const test = require('ava')
 const pino = require('pino')
+const mock = require('mock-require')
 const SerialPort = require('serialport/test')
 const createPort = require('./app/server')
 const MockBinding = SerialPort.Binding
 
 const logger = pino({ level: 'silent' })
 
-const getPort = (t, dbClient, opts) => {
+function getPort(t, dbClient, opts) {
   const handleError = err => t.fail(err)
   const port = createPort(SerialPort, dbClient, logger, handleError, opts)
   return port
 }
 
+function createKnexMock(handleInsert) {
+  mock('knex', function() {
+    return {
+      insert(data) {
+        return {
+          into(table) {
+            handleInsert(table, data)
+            return Promise.resolve()
+          },
+        }
+      },
+    }
+  })
+}
+
+test.afterEach.always(() => mock.stopAll())
+
 test.cb('enter shell mode and send lec command', t => {
   t.plan(3)
-
-  const mockDbClient = {
-    saveCoordinates() {
-      return Promise.resolve()
-    },
-  }
 
   const opts = {
     shellCommandReceived() {
@@ -42,26 +54,34 @@ test.cb('enter shell mode and send lec command', t => {
     readyData: '',
   })
 
-  const port = getPort(t, mockDbClient, opts)
+  const port = getPort(t, null, opts)
 })
 
 test.cb('read coordinates from serial port', t => {
-  t.plan(1)
+  t.plan(2)
 
-  const mockDbClient = {
-    saveCoordinates(pos) {
-      t.deepEqual(pos, {
-        sensor_id: '8B32',
-        x: 1.74,
-        y: 0.38,
-        z: 0.42,
-        accuracy: 100,
-        hex: 'x16',
-      })
-      t.end()
-      return Promise.resolve()
-    },
-  }
+  createKnexMock((table, data) => {
+    t.is(table, 'coordinates')
+    t.deepEqual(data, {
+      sensor_id: '8B32',
+      x: 1.74,
+      y: 0.38,
+      z: 0.42,
+      accuracy: 100,
+      hex: 'x16',
+    })
+    t.end()
+  })
+
+  const createDbClient = require('./app/db')
+
+  const dbClient = createDbClient({
+    username: 'DB_USERNAME',
+    password: 'DB_PASSWORD',
+    host: 'DB_HOST',
+    port: 'DB_PORT',
+    name: 'DB_NAME',
+  })
 
   MockBinding.createPort('/dev/ttyACM0', {
     echo: false,
@@ -69,7 +89,7 @@ test.cb('read coordinates from serial port', t => {
     readyData: '',
   })
 
-  const port = getPort(t, mockDbClient)
+  const port = getPort(t, dbClient)
   port.on('open', () => {
     port.binding.emitData(Buffer.from('POS,0,8B32,1.74,0.38,0.42,100,x16\r\n'))
   })
