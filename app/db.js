@@ -11,12 +11,12 @@ module.exports = ({ username, password, host, port, name }) => {
       return knex.schema.createTable('coordinates', table => {
         table.increments('id')
         table.string('sensor_id')
-        table.integer('x')
-        table.integer('y')
-        table.integer('z')
-        table.integer('accuracy')
+        table.decimal('x')
+        table.decimal('y')
+        table.decimal('z')
+        table.decimal('accuracy')
         table.string('hex')
-        table.timestamps()
+        table.timestamp('created_at').defaultTo(knex.fn.now())
       })
     },
     saveCoordinates({ sensor_id, x, y, z, accuracy, hex }) {
