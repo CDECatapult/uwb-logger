@@ -28,9 +28,21 @@ function createKnexMock(handleInsert) {
   })
 }
 
+function getDbClient() {
+  const createDbClient = mock.reRequire('./app/db')
+
+  return createDbClient({
+    username: 'DB_USERNAME',
+    password: 'DB_PASSWORD',
+    host: 'DB_HOST',
+    port: 'DB_PORT',
+    name: 'DB_NAME',
+  })
+}
+
 test.afterEach.always(() => mock.stopAll())
 
-test.cb('enter shell mode and send lec command', t => {
+test.cb.serial('enter shell mode and send lec command', t => {
   t.plan(3)
 
   const opts = {
@@ -57,7 +69,7 @@ test.cb('enter shell mode and send lec command', t => {
   const port = getPort(t, null, opts)
 })
 
-test.cb('read coordinates from serial port', t => {
+test.cb.serial('read coordinates from serial port', t => {
   t.plan(2)
 
   createKnexMock((table, data) => {
@@ -73,15 +85,7 @@ test.cb('read coordinates from serial port', t => {
     t.end()
   })
 
-  const createDbClient = require('./app/db')
-
-  const dbClient = createDbClient({
-    username: 'DB_USERNAME',
-    password: 'DB_PASSWORD',
-    host: 'DB_HOST',
-    port: 'DB_PORT',
-    name: 'DB_NAME',
-  })
+  const dbClient = getDbClient()
 
   MockBinding.createPort('/dev/ttyACM0', {
     echo: false,
@@ -95,8 +99,8 @@ test.cb('read coordinates from serial port', t => {
   })
 })
 
-test.cb('Can read multiple messages', t => {
-  t.plan(3)
+test.cb.serial('Can read multiple messages', t => {
+  t.plan(6)
 
   const expectedCoordinates = [
     {
@@ -125,15 +129,15 @@ test.cb('Can read multiple messages', t => {
     },
   ]
 
-  const mockDbClient = {
-    saveCoordinates(pos) {
-      t.deepEqual(pos, expectedCoordinates.pop())
-      if (!expectedCoordinates.length) {
-        t.end()
-      }
-      return Promise.resolve()
-    },
-  }
+  createKnexMock((table, data) => {
+    t.is(table, 'coordinates')
+    t.deepEqual(data, expectedCoordinates.pop())
+    if (!expectedCoordinates.length) {
+      t.end()
+    }
+  })
+
+  const dbClient = getDbClient()
 
   MockBinding.createPort('/dev/ttyACM0', {
     echo: false,
@@ -141,7 +145,7 @@ test.cb('Can read multiple messages', t => {
     readyData: '',
   })
 
-  const port = getPort(t, mockDbClient)
+  const port = getPort(t, dbClient)
   port.on('open', () => {
     port.binding.emitData(
       Buffer.from(
