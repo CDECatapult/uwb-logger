@@ -25,18 +25,23 @@ It reads the coordinates from the UWB through serial port and store them in a re
 
 ## Installation
 
-This package require node 8+ and yarn:
+This package requires node 8+ and yarn. ForeverJS should also be used on the
+raspberry pi, so that the service can be restarted after a crash.
 
-Node:
+### Node
 
     curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
     sudo apt-get install -y nodejs
 
-Yarn:
+## Yarn
 
     curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
     echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
     sudo apt-get update && sudo apt-get install yarn
+
+## [ForeverJS](https://www.npmjs.com/package/forever)
+
+    npm i -g forever
 
 ## Hardware
 
